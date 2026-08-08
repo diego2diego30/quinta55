@@ -2,6 +2,7 @@
 # instance's image (built in the diego-inc repo) -- no shared base beyond
 # both being Python/Node, no shared credentials, no shared volumes.
 FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates gnupg \

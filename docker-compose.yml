@@ -13,6 +13,7 @@ services:
     volumes:
       - ./quinta55:/app/quinta55
       - quinta55-data:/app/data
+      - claude-credentials:/root/.claude
     command: ["telegram-daemon"]
 
   # Invoked on-demand or via cron once real workflows/cadence are defined
@@ -27,7 +28,9 @@ services:
     volumes:
       - ./quinta55:/app/quinta55
       - quinta55-data:/app/data
+      - claude-credentials:/root/.claude
     entrypoint: ["python", "-m", "hermes.cli", "run-chain"]
 
 volumes:
   quinta55-data:
+  claude-credentials:
