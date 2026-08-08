@@ -1,0 +1,33 @@
+# Quinta55 instance only. No network/volume shared with the trading
+# instance's compose stack (a separate repo/checkout entirely) -- runs
+# alongside it on the same VPS as genuinely independent containers, per
+# execution-plan.md Section A/6.
+services:
+  hermes-telegram:
+    build: .
+    image: quinta55-hermes:latest
+    container_name: quinta55-hermes
+    restart: unless-stopped
+    env_file:
+      - ./deploy/.env
+    volumes:
+      - ./quinta55:/app/quinta55
+      - quinta55-data:/app/data
+    command: ["telegram-daemon"]
+
+  # Invoked on-demand or via cron once real workflows/cadence are defined
+  # (see TODO in quinta55/CLAUDE.md) -- e.g.:
+  #   docker compose run --rm hermes-chain --task "..." --target-integration email
+  hermes-chain:
+    build: .
+    image: quinta55-hermes:latest
+    profiles: ["cron"]
+    env_file:
+      - ./deploy/.env
+    volumes:
+      - ./quinta55:/app/quinta55
+      - quinta55-data:/app/data
+    entrypoint: ["python", "-m", "hermes.cli", "run-chain"]
+
+volumes:
+  quinta55-data:
