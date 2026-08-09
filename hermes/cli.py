@@ -2,6 +2,7 @@
 
     python -m hermes.cli run-chain --task "..." [--target-integration email]
     python -m hermes.cli authorize-integration --integration email --confirmed-by diego
+    python -m hermes.cli cost-report
     python -m hermes.cli telegram-daemon
 """
 from __future__ import annotations
@@ -9,9 +10,16 @@ from __future__ import annotations
 import argparse
 import sys
 
+from hermes.cost import CostLedger
 from hermes.orchestrator import run_chain
 from hermes.state import AuthorizationState
 from hermes.telegram_bridge import TelegramBridge, TelegramConfig
+
+# Same on-demand cost-report trigger words as diego-inc -- kept identical
+# so the behavior is predictable across both bots, even though the two
+# CostLedger instances are fully separate (different repo/container/data
+# volume, per execution-plan.md Section A/6 isolation).
+COST_REPORT_TRIGGERS = {"cost", "/cost", "cost report", "costs", "usage", "spend"}
 
 
 def cmd_run_chain(args: argparse.Namespace) -> int:
@@ -33,11 +41,25 @@ def cmd_authorize_integration(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_cost_report(args: argparse.Namespace) -> int:
+    report = CostLedger().report()
+    print(report.as_text())
+    return 0
+
+
 def cmd_telegram_daemon(args: argparse.Namespace) -> int:
     bridge = TelegramBridge(config=TelegramConfig())
 
     def handle(text: str) -> None:
         print(f"received from Diego: {text}")
+
+        if text.strip().lower() in COST_REPORT_TRIGGERS:
+            report = CostLedger().report()
+            try:
+                bridge.send_status(report.as_text())
+            except Exception as exc:  # noqa: BLE001 - a failed reply must not crash the daemon
+                print(f"warning: cost report reply failed: {exc}", file=sys.stderr)
+            return
 
     bridge.poll_for_replies(handle)
     return 0
@@ -56,6 +78,9 @@ def main() -> int:
     p_auth.add_argument("--integration", required=True)
     p_auth.add_argument("--confirmed-by", required=True, help="Must be 'diego'")
     p_auth.set_defaults(func=cmd_authorize_integration)
+
+    p_cost = sub.add_parser("cost-report", help="Print month-to-date spend, projection, and cap status")
+    p_cost.set_defaults(func=cmd_cost_report)
 
     p_tg = sub.add_parser("telegram-daemon", help="Long-running process that listens for Diego's replies")
     p_tg.set_defaults(func=cmd_telegram_daemon)

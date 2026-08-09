@@ -18,6 +18,7 @@ from typing import Optional
 
 from hermes.business_action_guard import BusinessWriteNotAuthorized, assert_write_authorized
 from hermes.config import DEFAULT_MODEL_BY_ROLE, Paths
+from hermes.cost import BudgetExceeded, CostLedger, RunLock, cost_from_claude_response
 from hermes.logging_utils import RoleLogEntry, RunLogger
 from hermes.state import AuthorizationState
 
@@ -80,47 +81,73 @@ def run_chain(
     """
     paths = paths or Paths()
     logger = RunLogger(paths=paths)
+    ledger = CostLedger(paths=paths)
     auth_state = AuthorizationState.load()
 
     logger.log_event("chain_start", f"task={task_description!r} target_integration={target_integration}")
 
+    run_cost_usd = 0.0
+
+    def _bill(role: str, result: "RoleResult") -> None:
+        nonlocal run_cost_usd
+        usage = cost_from_claude_response(role, DEFAULT_MODEL_BY_ROLE[role], result.raw, run_id=logger.run_id)
+        ledger.record(usage)
+        run_cost_usd += usage.cost_usd
+        # Checked after every role so a single pathological call is cut
+        # off mid-chain rather than after all three roles have billed.
+        ledger.assert_run_within_cap(run_cost_usd)
+
     try:
-        research = _run_role("research", f"Research task: {task_description}", paths)
-        logger.log_role(RoleLogEntry(role="research", model=DEFAULT_MODEL_BY_ROLE["research"],
-                                      reasoning=research.text, output=research.raw))
+        # Section 5 discipline, applied here too even though it was
+        # written for the trading instance -- see hermes/cost.py.
+        ledger.assert_within_budget()
 
-        build = _run_role(
-            "build",
-            f"Research output:\n{research.text}\n\nProduce a concrete draft for: {task_description}",
-            paths,
+        with RunLock(paths=paths):
+            research = _run_role("research", f"Research task: {task_description}", paths)
+            logger.log_role(RoleLogEntry(role="research", model=DEFAULT_MODEL_BY_ROLE["research"],
+                                          reasoning=research.text, output=research.raw))
+            _bill("research", research)
+
+            build = _run_role(
+                "build",
+                f"Research output:\n{research.text}\n\nProduce a concrete draft for: {task_description}",
+                paths,
+            )
+            logger.log_role(RoleLogEntry(role="build", model=DEFAULT_MODEL_BY_ROLE["build"],
+                                          reasoning=build.text, output=build.raw))
+            _bill("build", build)
+
+            review = _run_role(
+                "review",
+                f"Research:\n{research.text}\n\nDraft:\n{build.text}\n\nApprove, reject, or escalate.",
+                paths,
+            )
+            logger.log_role(RoleLogEntry(role="review", model=DEFAULT_MODEL_BY_ROLE["review"],
+                                          reasoning=review.text, output=review.raw))
+            _bill("review", review)
+
+            write_authorized = False
+            if target_integration:
+                try:
+                    assert_write_authorized(target_integration, auth_state)
+                    write_authorized = True
+                except BusinessWriteNotAuthorized as exc:
+                    logger.log_event("business_write_blocked", str(exc))
+
+        logger.log_event(
+            "chain_end", f"write_authorized={write_authorized} run_cost_usd={run_cost_usd:.4f}"
         )
-        logger.log_role(RoleLogEntry(role="build", model=DEFAULT_MODEL_BY_ROLE["build"],
-                                      reasoning=build.text, output=build.raw))
-
-        review = _run_role(
-            "review",
-            f"Research:\n{research.text}\n\nDraft:\n{build.text}\n\nApprove, reject, or escalate.",
-            paths,
-        )
-        logger.log_role(RoleLogEntry(role="review", model=DEFAULT_MODEL_BY_ROLE["review"],
-                                      reasoning=review.text, output=review.raw))
-
-        write_authorized = False
-        if target_integration:
-            try:
-                assert_write_authorized(target_integration, auth_state)
-                write_authorized = True
-            except BusinessWriteNotAuthorized as exc:
-                logger.log_event("business_write_blocked", str(exc))
-
-        logger.log_event("chain_end", f"write_authorized={write_authorized}")
 
         return {
             "target_integration": target_integration,
             "write_authorized": write_authorized,
             "review_summary": review.text,
             "log_path": str(logger.log_path),
+            "run_cost_usd": run_cost_usd,
         }
+    except BudgetExceeded as exc:
+        logger.log_event("budget_blocked", str(exc))
+        raise
     except Exception as exc:  # noqa: BLE001
         logger.log_event("chain_error", str(exc))
         raise
