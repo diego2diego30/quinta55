@@ -6,6 +6,7 @@ about."
 """
 from __future__ import annotations
 
+import sys
 import time
 from dataclasses import dataclass
 from typing import Callable, Optional
@@ -62,4 +63,12 @@ class TelegramBridge:
                     continue
                 text = message.get("text")
                 if text:
-                    on_message(text)
+                    # The handler (hermes/cli.py) already guards its own
+                    # risky calls, but this is the backstop: an uncaught
+                    # exception here must not kill the long-poll loop --
+                    # that would silence the bot until systemd notices and
+                    # restarts it, losing every message in between.
+                    try:
+                        on_message(text)
+                    except Exception as exc:  # noqa: BLE001
+                        print(f"warning: on_message handler raised: {exc}", file=sys.stderr)

@@ -75,6 +75,7 @@ DEFAULT_MODEL_BY_ROLE = {
     "research": os.environ.get("MODEL_RESEARCH", "claude-haiku-4-5-20251001"),
     "build": os.environ.get("MODEL_BUILD", "claude-sonnet-5"),
     "review": os.environ.get("MODEL_REVIEW", "claude-sonnet-5"),
+    "chat": os.environ.get("MODEL_CHAT", "claude-haiku-4-5-20251001"),
 }
 
 ROLE_CHAIN = ["research", "build", "review"]
