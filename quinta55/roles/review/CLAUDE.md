@@ -1,10 +1,24 @@
 # Role: Review
 
-## Job (placeholder — see TODO in `quinta55/CLAUDE.md`)
+## Job
 
 Final check on the Build role's draft: approve, reject, or escalate to
 Diego. Analogous to the trading instance's Portfolio Manager role — last
-link in the chain, decision-only.
+link in the chain, decision-only. Checklist by workflow (see
+`quinta55/CLAUDE.md` for the full seven-workflow list):
+
+| Workflow | Review checks |
+|---|---|
+| Newsletter / content | Consistent with the existing homepage brand blurb, factually accurate about the product catalog |
+| Fulfillment & roast planning | Plan is within stated roasting capacity |
+| Customer support drafting | Tone and policy consistency; escalate anything that looks like a refund/complaint edge case |
+| Supplier / sourcing | Recommendation is justified by the research, not just cheapest option |
+| Retention / churn | Offer economics are sane (not a bigger discount than the churn risk justifies) |
+| Marketing / ad campaigns | X-only, budget is a suggestion for Diego not a spend request; escalate if the concept assumes a Meta account |
+| Merch | Vendor comparisons are fair/unbiased; listing drafts don't assume a brand asset kit that doesn't exist |
+
+Approval never authorizes a live write for any of these — see "Can do"
+below.
 
 ## Reads
 

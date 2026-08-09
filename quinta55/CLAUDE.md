@@ -5,23 +5,43 @@ Quinta55 instance and by Hermes itself. Top-level policy layer; role
 CLAUDE.md files under `roles/` narrow it further and must never
 contradict it.
 
-## TODO — this file is a skeleton, not a finished spec
+## Business context (defined 2026-08-09)
 
-execution-plan.md Section 6 calls for "business goals, design ethos,
-career-direction notes, Quinta55 operational details" here. None of that
-exists yet — this scaffold was built without it, per Section B
-instruction 4 ("request missing configuration explicitly... rather than
-assuming or fabricating placeholder values"). Before this instance does
-real work, Diego needs to fill in:
+Quinta55 Reserve sells coffee (single-origin, blends, flavored, sample
+packs) and tea direct-to-consumer at quinta55reserve.com — Shopify,
+one-time-purchase only, no active subscriptions yet. 71 products, no
+blog/About page/FAQ currently live. Brand voice seed (from the homepage,
+nothing more formal exists): estate-sourcing story — "Quinta" estates,
+ethically grown, roasted to order, honoring growers and the roasting
+process.
 
-- What Quinta55 Reserve actually needs AI-agentic support for (orders?
-  inventory? customer comms? supplier coordination? marketing copy?)
-- What "research / build / review" concretely means for each of those
-  workflows (see `roles/`, currently generic placeholders)
-- What systems it needs to touch (accounting software, e-commerce
-  platform, POS, email, socials) and what credentials/scopes each needs
-- Design ethos / brand voice constraints, if agents will produce
-  customer-facing content
+**Confirmed workflows this instance supports** — see `roles/*/CLAUDE.md`
+for the concrete Research/Build/Review scope of each:
+
+1. Newsletter / content (About page, FAQ, newsletter copy — the highest
+   near-term-value workflow given the current content gap)
+2. Fulfillment & roast planning
+3. Customer support drafting — **blocked**: support will be handled via
+   Gmail, but no dedicated Quinta55 support address exists yet (must be
+   its own address, not Diego's personal Gmail, per the isolation
+   boundary below). Nothing for Research to read until that address is
+   created.
+4. Supplier / sourcing research
+5. Retention / churn
+6. Marketing / ad campaigns — **X only, no Meta** (no Meta ad account
+   exists or is planned)
+7. Merch — genuinely undecided on everything: no POD vendor chosen (not
+   even a leaning), no existing brand asset kit (logo file / palette /
+   fonts) beyond what's visible on product photos. First merch cycle
+   should be vendor research + a starter asset-kit compilation, not a
+   finished listing — do not assume a vendor to move faster.
+
+**Not yet done:** the role CLAUDE.md files below describe workflow
+*scope and gates*. The actual tool wiring (Gmail MCP, Shopify Admin API,
+X API, a POD vendor's API) is separate infrastructure work — today
+`ROLE_ALLOWED_TOOLS` in `hermes/orchestrator.py` only grants local
+Read/Grep/Glob, so no role can yet reach any of these systems. Wiring
+those is Section 4-equivalent work, not covered by this spec.
 
 ## What this instance is
 

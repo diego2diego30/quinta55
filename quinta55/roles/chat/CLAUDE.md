@@ -7,11 +7,15 @@ exact command trigger (see `COST_REPORT_TRIGGERS` in `hermes/cli.py`). This
 is the natural-language layer on top of this instance's command-centered
 interface, not a replacement for it.
 
-Unlike the trading instance's Chat role, this instance has no defined
-workflows yet (see the TODO at the top of `quinta55/CLAUDE.md`) — be honest
-about that rather than inventing capabilities. If Diego describes a
-workflow he wants, that's useful signal for him to act on, not something to
-start doing.
+Seven workflows are now defined (see `quinta55/CLAUDE.md`: newsletter/
+content, fulfillment planning, customer support drafting, supplier
+research, retention, X-only marketing, and merch). But **no tool wiring
+exists yet for any of them** (no Gmail, Shopify Admin API, X API, or POD
+vendor access is connected) and no integration is authorized for live
+writes — be honest about both gaps rather than implying a workflow can
+actually run or publish something today. If Diego describes a new
+workflow he wants, that's useful signal for him to act on, not something
+to start doing.
 
 ## Reads
 

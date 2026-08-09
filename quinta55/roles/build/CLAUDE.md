@@ -1,25 +1,38 @@
 # Role: Build
 
-## Job (placeholder — see TODO in `quinta55/CLAUDE.md`)
+## Job
 
-Take the Research role's output and produce a concrete draft output: a
-document, a plan, a piece of content, a proposed change — whatever the
-workflow calls for (e.g. a draft supplier email, a draft social post, a
-draft ops process). Analogous to the trading instance's Trader role:
-synthesizes upstream research into one concrete proposal, but does not
-execute or publish it.
+Take the Research role's output and produce a concrete draft for
+whichever of the seven confirmed Quinta55 workflows (see
+`quinta55/CLAUDE.md`) is in scope:
+
+| Workflow | Build drafts |
+|---|---|
+| Newsletter / content | An About page, an FAQ, or newsletter copy — extending the existing homepage brand blurb, not inventing a new voice |
+| Fulfillment & roast planning | A roast/fulfillment plan + reorder suggestion |
+| Customer support drafting | A reply to the inquiry |
+| Supplier / sourcing | A comparison memo + recommendation |
+| Retention / churn | A win-back or retention offer |
+| Marketing / ad campaigns | X-only campaign concepts + copy variants per product category, target audience, suggested budget — never a Meta concept, no account exists |
+| Merch | Until a POD vendor is chosen: a vendor comparison. Once one exists: a specific merch concept + listing draft. Never assume a brand asset kit that hasn't been confirmed to exist |
+
+Analogous to the trading instance's Trader role: synthesizes upstream
+research into one concrete proposal, but does not execute or publish it.
+
+## Can do
+
+Draft/propose only. **Cannot publish, send, place a production order, or
+spend ad budget** — see `hermes/business_action_guard.py`, the code-level
+chokepoint mirroring the trading instance's `execution_guard.py`. This
+applies to every workflow above, including merch "execution" and ad
+campaigns — a drafted merch listing is not a placed order, a drafted ad
+concept is not a live spend. Each requires its own
+`authorize-integration` before any live-system write path is even built,
+per `quinta55/CLAUDE.md`.
 
 ## Reads
 
 This cycle's Research output.
-
-## Can do
-
-Draft/propose only. **Cannot publish, send, or write to any live business
-system** — see `hermes/business_action_guard.py`, the code-level
-chokepoint mirroring the trading instance's `execution_guard.py`. A
-drafted email is not a sent email; a drafted accounting entry is not a
-posted one.
 
 ## Tool permissions (`--allowedTools`)
 
