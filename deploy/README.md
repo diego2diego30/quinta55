@@ -20,15 +20,14 @@ workflows are defined.
 ## 1. Checkout on the VPS
 
 ```
-sudo mkdir -p /opt/ecosystem
-cd /opt/ecosystem
+cd /root
 git clone <this repo's URL> quinta55-repo
 cd quinta55-repo
 ```
 
-`quinta55/` inside this checkout is `/opt/ecosystem/quinta55/` from
+`quinta55/` inside this checkout is `/root/quinta55-repo/quinta55/` from
 execution-plan.md Section A, as long as you check out at
-`/opt/ecosystem/quinta55-repo` (named to avoid colliding with the
+`/root/quinta55-repo` (named to avoid colliding with the
 `quinta55/` subdirectory itself).
 
 ## 2. Fill in real configuration

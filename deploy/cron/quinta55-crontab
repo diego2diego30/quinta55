@@ -5,4 +5,4 @@
 # inventory check" or "weekly supplier follow-up," add a line here of the
 # same shape as the trading instance's:
 #
-# 0 8 * * 1-5 cd /opt/ecosystem/quinta55-repo && /usr/bin/docker compose run --rm hermes-chain --task "..." >> /opt/ecosystem/quinta55/logs/cron.log 2>&1
+# 0 8 * * 1-5 cd /root/quinta55-repo && /usr/bin/docker compose run --rm hermes-chain --task "..." >> /root/quinta55-repo/quinta55/logs/cron.log 2>&1
